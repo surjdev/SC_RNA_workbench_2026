@@ -24,7 +24,7 @@
 | **Part 4** | Core Utility Package (`src/workbench_utils/`) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (29 tests & ruff check OK) |
 | **Part 5** | Config-Driven Parameterization (`configs/*.yaml`) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (YAML schemas & validation OK) |
 | **Part 6** | Parameterized Execution & Report Generation (Papermill/Make) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (Papermill & HTML report OK) |
-| **Part 7** | Template Notebooks (QC, Clustering, PyDESeq2) & README | ⏳ Pending | - | - | [ ] |
+| **Part 7** | Template Notebooks (QC, Clustering, PyDESeq2) & README | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (3 templates & README OK) |
 | **Part 8** | CI/CD Pipeline (GitHub Actions) & Final Acceptance | ⏳ Pending | - | - | [ ] |
 
 ---

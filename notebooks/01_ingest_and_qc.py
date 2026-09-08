@@ -1,3 +1,10 @@
+# ---
+# jupyter:
+#   language_info:
+#     name: python
+#     version: '3.11'
+# ---
+
 # %% [markdown]
 # Start with [00_end_to_end.ipynb](00_end_to_end.ipynb) for an executable synthetic walkthrough. This topic notebook requires the indicated input checkpoints and dataset-specific parameters. Open from workbench/notebooks/.
 

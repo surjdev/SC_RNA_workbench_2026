@@ -1,3 +1,21 @@
+# ---
+# jupyter:
+#   kernelspec:
+#     display_name: Python 3
+#     language: python
+#     name: python3
+#   language_info:
+#     codemirror_mode:
+#       name: ipython
+#       version: 3
+#     file_extension: .py
+#     mimetype: text/x-python
+#     name: python
+#     nbconvert_exporter: python
+#     pygments_lexer: ipython3
+#     version: 3.12.14
+# ---
+
 # %% [markdown]
 # # Downstream analysis: AnnData + Pandas + NumPy + Scikit-learn
 # รัน **Restart Kernel and Run All** ได้ด้วยข้อมูลสังเคราะห์ที่กำหนด seed ไม่มีการดาวน์โหลดข้อมูล

@@ -3,5 +3,5 @@
 # Complies with FR-3 (scRNAseq_Workbench_Requirements.md)
 
 formats = "ipynb,py:percent"
-notebook_metadata_filter = "-all"
+notebook_metadata_filter = "kernelspec,language_info,-all"
 cell_metadata_filter = "parameters,-all"

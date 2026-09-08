@@ -98,6 +98,8 @@ echo -e "${BLUE}1. Executing notebook with Papermill (FR-7)...${NC}"
 $RUNNER papermill \
     "$NB_PATH" \
     "$EXECUTED_NB" \
+    -k python3 \
+    --language python \
     -p config_path "$CONFIG" \
     --log-output
 
