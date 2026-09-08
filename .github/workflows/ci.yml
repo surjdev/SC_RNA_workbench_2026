@@ -1,0 +1,94 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-hygiene:
+    name: Code Quality & Git Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install linting and notebook hygiene tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pre-commit jupytext nbstripout pyyaml
+
+      - name: Run Ruff Linter
+        run: |
+          ruff check src/ tests/ notebooks/
+
+      - name: Run Ruff Formatter Check
+        run: |
+          ruff format --check src/ tests/ notebooks/
+
+      - name: Check Jupytext Notebook Pairing
+        run: |
+          jupytext --sync notebooks/*.ipynb
+          git diff --exit-code notebooks/
+
+      - name: Run Pre-commit Hooks on All Files
+        run: |
+          pre-commit run --all-files
+
+  test-and-coverage:
+    name: Unit Tests & Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: latest
+          cache: true
+
+      - name: Install Editable Workbench Utilities
+        run: |
+          pixi run install-editable
+
+      - name: Validate Analysis Configuration Schemas
+        run: |
+          pixi run python -m workbench_utils.config configs/default_analysis.yaml
+          pixi run python -m workbench_utils.config configs/strict_qc_analysis.yaml
+          pixi run python -m workbench_utils.config configs/pseudobulk_de_analysis.yaml
+
+      - name: Run Pytest Suite with Coverage
+        run: |
+          pixi run pytest tests/ --cov=workbench_utils --cov-report=term-missing --cov-report=xml
+
+      - name: Check for Uncommitted Residuals / Leaked Files
+        run: |
+          git status --porcelain
+          test -z "$(git status --porcelain)" || (echo "Working directory is dirty after tests!" && exit 1)
+
+      - name: Upload Coverage Report Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml
+          if-no-files-found: ignore
