@@ -1,0 +1,35 @@
+[workspace]
+name = "sc_workbench"
+version = "0.1.0"
+description = "Downstream Single-Cell Analysis Workbench Environment"
+authors = ["Bioinformatics Team"]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64"]
+
+[dependencies]
+python = ">=3.11,<3.13"
+anndata = ">=0.10.0"
+scanpy = ">=1.10.0"
+scikit-learn = ">=1.4.0"
+scipy = ">=1.12.0"
+numpy = ">=1.24.0"
+pandas = ">=2.0.0"
+matplotlib-base = ">=3.8.0"
+seaborn = ">=0.13.0"
+plotly = ">=5.20.0"
+leidenalg = ">=0.10.0"
+python-igraph = ">=0.11.0"
+scrublet = ">=0.2.3"
+harmonypy = ">=0.0.9"
+gseapy = ">=1.1.0"
+rich = ">=13.7.0"
+tqdm = ">=4.66.0"
+jupyterlab = ">=4.1.0"
+ipykernel = ">=6.29.0"
+nbformat = ">=5.9.0"
+nbclient = ">=0.10.0"
+pytest = ">=8.0.0"
+
+[tasks]
+lab = "python -m jupyterlab --ip=127.0.0.1 --port=8888 --no-browser"
+test = "pytest tests/"
