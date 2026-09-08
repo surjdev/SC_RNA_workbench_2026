@@ -21,7 +21,7 @@
 | **Part 1** | Scaffolding & Directory Alignment | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (Scaffold & Script OK) |
 | **Part 2** | Environment & Dependencies (PyDESeq2, Conda, Pixi) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (pydeseq2 & 17 tests OK) |
 | **Part 3** | Git Hygiene & Data Versioning (Pre-commit, LFS/DVC) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (pre-commit & Git LFS OK) |
-| **Part 4** | Core Utility Package (`src/workbench_utils/`) | ⏳ Pending | - | - | [ ] |
+| **Part 4** | Core Utility Package (`src/workbench_utils/`) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (29 tests & ruff check OK) |
 | **Part 5** | Config-Driven Parameterization (`configs/*.yaml`) | ⏳ Pending | - | - | [ ] |
 | **Part 6** | Parameterized Execution & Report Generation (Papermill/Make) | ⏳ Pending | - | - | [ ] |
 | **Part 7** | Template Notebooks (QC, Clustering, PyDESeq2) & README | ⏳ Pending | - | - | [ ] |
