@@ -9,11 +9,12 @@ build/
 *.egg-info/
 .eggs/
 
-# Virtual environments & pixi
+# Virtual environments & package managers
 .pixi/
 .venv/
 env/
 venv/
+conda-env/
 
 # Jupyter Notebook checkpoints & caches
 .ipynb_checkpoints
@@ -24,16 +25,22 @@ venv/
 .coverage
 htmlcov/
 
-# Local models and large checkpoints
-*.pt
-*.pth
-*.pkl
-models/
-data/
+# Generated Reports (keep .gitkeep)
+reports/*.html
+reports/*.pdf
+
+# Single-Cell Data & Large Artifacts (NFR-6 / FR-4)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+*.h5ad
+*.loom
+*.mtx
+*.mtx.gz
+*.bam
+*.fastq.gz
 
 # OS specific files
 .DS_Store
 Thumbs.db
-
-# Generated tutorial outputs
-results/
