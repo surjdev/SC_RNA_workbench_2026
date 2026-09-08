@@ -1,0 +1,24 @@
+# ==============================================================================
+# configs/pseudobulk_de_analysis.yaml
+# Multi-sample cohort configuration with pseudo-bulk PyDESeq2 aggregation
+# ==============================================================================
+
+project:
+  name: "scRNAseq_Pseudobulk_DE_Analysis"
+  random_seed: 42
+
+data:
+  input_path: "data/raw/gene_cell_count_matrix.tsv"
+  output_h5ad: "data/processed/pseudobulk_analyzed.h5ad"
+
+differential_expression:
+  tool: "pydeseq2"
+  design_factor: "condition"
+  sample_key: "sample_id" # Aggregate cells per biological sample (replicate)
+  contrast:
+    - "condition"
+    - "Disease"
+    - "Healthy"
+  min_cells_per_gene: 5
+  fdr_cutoff: 0.05
+  log2fc_cutoff: 1.0

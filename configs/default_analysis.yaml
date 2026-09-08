@@ -1,0 +1,78 @@
+# ==============================================================================
+# configs/default_analysis.yaml
+# Single-cell Transcriptomics Downstream Analysis Pipeline Configuration
+# Complies with scRNAseq_Workbench_Requirements.md (FR-5, NFR-1)
+# ==============================================================================
+
+project:
+  name: "scRNAseq_Default_Analysis"
+  description: "Standard downstream single-cell QC, clustering, and DE pipeline"
+  author: "Bioinformatics Team"
+  version: "1.0.0"
+  random_seed: 42 # Fixed seed for complete numerical reproducibility (NFR-1)
+
+data:
+  input_path: "data/raw/gene_cell_count_matrix.tsv"
+  output_h5ad: "data/processed/analyzed_workbench.h5ad"
+  report_dir: "reports"
+  export_seurat: true
+  seurat_output_dir: "data/processed/seurat_export"
+
+qc:
+  mito_prefix:
+    - "MT-"
+    - "mt-"
+  ribo_prefix:
+    - "RPS"
+    - "RPL"
+    - "rps"
+    - "rpl"
+  min_genes: 200 # Minimum detected genes per cell
+  max_genes: 7500 # Maximum detected genes (filter potential multiplets)
+  min_counts: 500 # Minimum total UMI read counts per cell
+  max_counts: 50000 # Maximum total UMI read counts
+  max_pct_mito: 20.0 # Maximum allowed mitochondrial read percentage (%)
+  max_pct_ribo: 50.0 # Maximum allowed ribosomal read percentage (%)
+  run_doublet_detection: true
+  expected_doublet_rate: 0.06 # Estimated doublet rate from microfluidic loading
+  max_doublet_score: 0.35 # Threshold to classify cell as doublet
+
+filter_genes:
+  min_cells: 3 # Retain genes detected in at least this many cells
+
+normalization:
+  target_sum: 10000.0 # Standard library size scaling (CPM / 10k)
+  log1p: true # Natural log(x + 1) transformation
+  n_top_genes: 2000 # Number of highly variable genes (HVGs) to select
+  flavor: "seurat" # Scanpy HVG flavor: 'seurat' or 'cell_ranger'
+
+reduction:
+  n_pcs: 30 # Number of principal components
+  n_neighbors: 15 # Number of nearest neighbors for k-NN graph
+  metric: "cosine" # Distance metric for graph construction
+  umap_min_dist: 0.5 # UMAP minimum distance
+  umap_spread: 1.0 # UMAP spread parameter
+
+clustering:
+  method: "leiden" # Graph-based community detection algorithm
+  resolution: 0.8 # Clustering resolution (higher = more clusters)
+
+markers:
+  method: "wilcoxon" # Statistical test for marker ranking
+  n_genes: 20 # Number of top marker genes per cluster to export
+
+differential_expression:
+  tool: "pydeseq2" # Negative Binomial GLM differential expression
+  design_factor: "condition" # Metadata column to test
+  contrast:
+    - "condition"
+    - "Treated"
+    - "Control"
+  min_cells_per_gene: 3
+  fdr_cutoff: 0.05 # Adjusted p-value (Benjamini-Hochberg) cutoff
+  log2fc_cutoff: 1.0 # Absolute log2 fold-change cutoff
+
+plotting:
+  palette: "nature" # Publication color scheme ('nature' or 'cell')
+  dpi: 150 # Image resolution
+  save_figures: true

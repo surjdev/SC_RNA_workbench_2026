@@ -4,11 +4,14 @@ Loads, validates, and supplies sensible defaults for config-driven single-cell w
 Complies with scRNAseq_Workbench_Requirements.md (FR-5, NFR-1).
 """
 
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import yaml
 from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 console = Console()
 
@@ -17,15 +20,21 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "name": "scRNAseq_Workbench_Analysis",
         "random_seed": 42,
     },
+    "data": {
+        "input_path": "data/raw/gene_cell_count_matrix.tsv",
+        "output_h5ad": "data/processed/analyzed_workbench.h5ad",
+        "report_dir": "reports",
+    },
     "qc": {
         "min_genes": 200,
         "max_genes": 8000,
         "min_counts": 500,
         "max_counts": 60000,
         "max_pct_mito": 20.0,
-        "max_pct_ribo": 40.0,
+        "max_pct_ribo": 50.0,
         "expected_doublet_rate": 0.06,
         "max_doublet_score": 0.35,
+        "run_doublet_detection": True,
     },
     "filter_genes": {
         "min_cells": 3,
@@ -46,10 +55,16 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "resolution": 0.8,
     },
     "differential_expression": {
+        "tool": "pydeseq2",
         "design_factor": "condition",
         "min_cells_per_gene": 3,
         "fdr_cutoff": 0.05,
         "log2fc_cutoff": 1.0,
+    },
+    "plotting": {
+        "palette": "nature",
+        "dpi": 150,
+        "save_figures": True,
     },
 }
 
@@ -67,7 +82,7 @@ def load_config(config_path: Optional[Union[str, Path]] = None) -> Dict[str, Any
     dict
         Merged configuration dictionary.
     """
-    config = DEFAULT_CONFIG.copy()
+    config = {k: (v.copy() if isinstance(v, dict) else v) for k, v in DEFAULT_CONFIG.items()}
 
     if config_path is not None:
         p = Path(config_path)
@@ -86,4 +101,58 @@ def load_config(config_path: Optional[Union[str, Path]] = None) -> Dict[str, Any
 
         console.print(f"[bold green]✔ Configuration loaded from:[/bold green] {p.name}")
 
+    validate_config(config)
     return config
+
+
+def validate_config(config: Dict[str, Any]) -> bool:
+    """Validate that required sections and critical types exist in configuration."""
+    required_sections = ["project", "qc", "normalization", "reduction", "clustering"]
+    for sec in required_sections:
+        if sec not in config:
+            raise KeyError(f"Missing required configuration section: '{sec}'")
+
+    if "random_seed" not in config["project"]:
+        raise KeyError("Missing 'random_seed' in config['project'] (required for NFR-1)!")
+
+    return True
+
+
+def save_config(config: Dict[str, Any], output_path: Union[str, Path]) -> None:
+    """Export configuration dictionary to a YAML file."""
+    p = Path(output_path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with open(p, "w", encoding="utf-8") as f:
+        yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+    console.print(f"[bold green]✔ Saved configuration to:[/bold green] {p}")
+
+
+def print_config_summary(config: Dict[str, Any]) -> None:
+    """Display pretty formatted table of configuration sections and values."""
+    table = Table(title=f"Configuration: {config.get('project', {}).get('name', 'Pipeline')}")
+    table.add_column("Section", style="cyan", no_wrap=True)
+    table.add_column("Key", style="magenta")
+    table.add_column("Value", style="green")
+
+    for sec, values in config.items():
+        if isinstance(values, dict):
+            for k, v in values.items():
+                table.add_row(sec, str(k), str(v))
+        else:
+            table.add_row(sec, "-", str(values))
+
+    console.print(table)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        cfg_file = sys.argv[1]
+        try:
+            cfg = load_config(cfg_file)
+            print_config_summary(cfg)
+            console.print(Panel("[bold green]Validation Successful![/bold green]"))
+        except Exception as e:
+            console.print(Panel(f"[bold red]Validation Error:[/bold red] {e}"))
+            sys.exit(1)
+    else:
+        print_config_summary(DEFAULT_CONFIG)

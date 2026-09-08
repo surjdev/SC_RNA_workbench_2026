@@ -1,0 +1,39 @@
+# ==============================================================================
+# configs/strict_qc_analysis.yaml
+# High-stringency QC configuration for datasets with elevated noise/debris
+# ==============================================================================
+
+project:
+  name: "scRNAseq_Strict_QC_Analysis"
+  random_seed: 42
+
+qc:
+  min_genes: 500 # Stricter gene detection minimum
+  max_genes: 6000
+  min_counts: 1000 # Higher sequencing depth minimum
+  max_counts: 40000
+  max_pct_mito: 10.0 # Strict mitochondrial cut-off (healthy viable cells only)
+  max_pct_ribo: 40.0
+  run_doublet_detection: true
+  expected_doublet_rate: 0.08
+  max_doublet_score: 0.25 # Aggressive doublet filtering
+
+filter_genes:
+  min_cells: 5
+
+normalization:
+  target_sum: 10000.0
+  n_top_genes: 2500
+
+reduction:
+  n_pcs: 40
+  n_neighbors: 20
+
+clustering:
+  method: "leiden"
+  resolution: 1.0
+
+differential_expression:
+  design_factor: "condition"
+  fdr_cutoff: 0.01 # Stricter statistical significance
+  log2fc_cutoff: 1.5
