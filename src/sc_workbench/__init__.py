@@ -3,17 +3,19 @@ Single-Cell Downstream Analysis Workbench (sc-workbench).
 Production-ready Python toolkit for downstream transcriptomics analysis.
 """
 
+from . import (
+    annotation,
+    clustering,
+    io,
+    markers,
+    pathway,
+    plotting,
+    preprocess,
+    qc,
+    reduction,
+    trajectory,
+)
 from .workbench import SingleCellWorkbench
-from . import io
-from . import qc
-from . import preprocess
-from . import reduction
-from . import clustering
-from . import markers
-from . import annotation
-from . import pathway
-from . import trajectory
-from . import plotting
 
 __version__ = "0.1.0"
 __all__ = [

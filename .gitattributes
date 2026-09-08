@@ -1,0 +1,17 @@
+# .gitattributes
+# Git LFS tracking configuration for large single-cell genomics datasets
+# Complies with FR-4, NFR-6 (scRNAseq_Workbench_Requirements.md)
+
+# AnnData and Loom container files
+*.h5ad filter=lfs diff=lfs merge=lfs -text
+*.loom filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
+*.hdf5 filter=lfs diff=lfs merge=lfs -text
+
+# Sequencing & Matrix archives
+*.mtx.gz filter=lfs diff=lfs merge=lfs -text
+*.tsv.gz filter=lfs diff=lfs merge=lfs -text
+*.csv.gz filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.bam filter=lfs diff=lfs merge=lfs -text
+*.fastq.gz filter=lfs diff=lfs merge=lfs -text

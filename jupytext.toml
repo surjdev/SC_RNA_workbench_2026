@@ -1,0 +1,7 @@
+# jupytext.toml
+# Automatically pair notebooks in notebooks/ with py:percent format
+# Complies with FR-3 (scRNAseq_Workbench_Requirements.md)
+
+formats = "ipynb,py:percent"
+notebook_metadata_filter = "-all"
+cell_metadata_filter = "parameters,-all"
