@@ -1,0 +1,40 @@
+name: sc_workbench
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - python>=3.11,<3.13
+  - anndata>=0.10.0
+  - scanpy>=1.10.0
+  - pydeseq2>=0.5.0
+  - scikit-learn>=1.4.0
+  - scipy>=1.12.0
+  - numpy>=1.24.0
+  - pandas>=2.0.0
+  - matplotlib-base>=3.8.0
+  - seaborn>=0.13.0
+  - plotly>=5.20.0
+  - leidenalg>=0.10.0
+  - python-igraph>=0.11.0
+  - scrublet>=0.2.3
+  - harmonypy>=0.0.9
+  - gseapy>=1.1.0
+  - pyyaml>=6.0.0
+  - rich>=13.7.0
+  - tqdm>=4.66.0
+  - jupyterlab>=4.1.0
+  - ipykernel>=6.29.0
+  - nbformat>=5.9.0
+  - nbclient>=0.10.0
+  - papermill>=2.5.0
+  - jupytext>=1.16.0
+  - nbstripout>=0.7.0
+  - nbconvert>=7.16.0
+  - pytest>=8.0.0
+  - pytest-cov>=4.1.0
+  - ruff>=0.4.0
+  - pre-commit>=3.7.0
+  - pip>=24.0
+  - pip:
+      - -e .

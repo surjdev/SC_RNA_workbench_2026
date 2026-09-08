@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "sc-workbench"
+name = "workbench-utils"
 version = "0.1.0"
-description = "Production Downstream Single-Cell Analysis Workbench (Scanpy, AnnData, Scrublet, Harmony, GSEAPY)"
+description = "Downstream Single-Cell Analysis Workbench Utilities (Scanpy, PyDESeq2, AnnData)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -17,6 +17,7 @@ keywords = [
     "transcriptomics",
     "scanpy",
     "anndata",
+    "pydeseq2",
     "scrublet",
     "harmony",
     "bioinformatics"
@@ -33,6 +34,7 @@ classifiers = [
 dependencies = [
     "anndata>=0.10.0",
     "scanpy>=1.10.0",
+    "pydeseq2>=0.5.0",
     "scikit-learn>=1.4.0",
     "scipy>=1.12.0",
     "numpy>=1.24.0",
@@ -45,6 +47,7 @@ dependencies = [
     "scrublet>=0.2.3",
     "harmonypy>=0.0.9",
     "gseapy>=1.1.0",
+    "pyyaml>=6.0.0",
     "rich>=13.7.0",
     "tqdm>=4.66.0",
 ]
@@ -55,19 +58,33 @@ notebooks = [
     "ipykernel>=6.29.0",
     "nbformat>=5.9.0",
     "nbclient>=0.10.0",
+    "papermill>=2.5.0",
+    "jupytext>=1.16.0",
+    "nbstripout>=0.7.0",
+    "nbconvert>=7.16.0",
 ]
 dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
+    "ruff>=0.4.0",
+    "pre-commit>=3.7.0",
 ]
 all = [
-    "sc-workbench[notebooks,dev]",
+    "workbench-utils[notebooks,dev]",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["sc_workbench"]
+packages = ["src/workbench_utils", "src/sc_workbench"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-pythonpath = ["."]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

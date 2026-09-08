@@ -19,7 +19,7 @@
 | Part | ชื่องาน (Milestone) | สถานะ | ผู้ดำเนินการ | วันที่เสร็จสิ้น | ผ่าน Verification หรือไม่ |
 |:---:|---|:---:|:---:|:---:|:---:|
 | **Part 1** | Scaffolding & Directory Alignment | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (Scaffold & Script OK) |
-| **Part 2** | Environment & Dependencies (PyDESeq2, Conda, Pixi) | ⏳ Pending | - | - | [ ] |
+| **Part 2** | Environment & Dependencies (PyDESeq2, Conda, Pixi) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (pydeseq2 & 17 tests OK) |
 | **Part 3** | Git Hygiene & Data Versioning (Pre-commit, LFS/DVC) | ⏳ Pending | - | - | [ ] |
 | **Part 4** | Core Utility Package (`src/workbench_utils/`) | ⏳ Pending | - | - | [ ] |
 | **Part 5** | Config-Driven Parameterization (`configs/*.yaml`) | ⏳ Pending | - | - | [ ] |
