@@ -14,20 +14,27 @@ import scanpy as sc
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score
 
-# Works from repository root, workbench/, or workbench/notebooks/.
+# Works from repository root, notebooks/, or any subfolder
 root = next(
     p
     for p in [Path.cwd(), *Path.cwd().parents]
-    if (p / "sc_workbench").is_dir() or (p / "workbench/sc_workbench").is_dir()
+    if (p / "src/sc_workbench").is_dir() or (p / "src").is_dir()
 )
-package_root = root if (root / "sc_workbench").is_dir() else root / "workbench"
-sys.path.insert(0, str(package_root))
+package_root = root
+sys.path.insert(0, str(package_root / "src"))
 from sc_workbench import SingleCellWorkbench, clustering, io, markers, preprocess, qc, reduction
+from workbench_utils.config import load_config
 
+# %%
+# Parameters cell for Papermill (FR-7)
+config_path = "configs/default_analysis.yaml"
+
+# %%
+cfg = load_config(config_path if Path(config_path).exists() else None)
 sc.settings.verbosity = 0
 GTF_PATH = None  # Set to the exact upstream genes.gtf when using Ensembl IDs
 COUNTS_PATH = None  # e.g. Path('/absolute/path/results/counts/gene_cell_count_matrix.tsv')
-OUTPUT = package_root / "results" / "tutorial"
+OUTPUT = package_root / "data" / "processed" / "tutorial"
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
 # %% [markdown]

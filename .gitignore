@@ -28,6 +28,7 @@ htmlcov/
 # Generated Reports (keep .gitkeep)
 reports/*.html
 reports/*.pdf
+reports/*.ipynb
 
 # Single-Cell Data & Large Artifacts (NFR-6 / FR-4)
 data/raw/*
