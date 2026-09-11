@@ -1,9 +1,10 @@
 # %% [markdown]
-# # 📊 Template 3: Differential Expression Analysis (PyDESeq2)
-# **Workflow:** Load Clustered AnnData ➔ PyDESeq2 Model Fitting ➔ Statistical Inference ➔ Volcano Plot ➔ Table Export
+# # 📊 Template 3: Differential Expression Analysis (PyDESeq2 on SMART-seq2)
+# **Workflow:** Load Clustered AnnData ➔ PyDESeq2 Model Fitting (Full-Length Read Counts) ➔ Statistical Inference ➔ Volcano Plot ➔ Table Export
 #
-# Part of the Single-Cell Transcriptomics Analysis Workbench (FR-10, NFR-5).
-# Utilizes **PyDESeq2** Negative Binomial generalized linear models for rigorous DE testing.
+# Part of the Single-Cell SMART-seq2 Transcriptomics Analysis Workbench (FR-10, NFR-5).
+# Utilizes **PyDESeq2** Negative Binomial generalized linear models. SMART-seq2's high read depth and full-length coverage
+# make it the ideal single-cell platform for DESeq2 statistical modeling without droplet dropout distortions.
 
 # %%
 from pathlib import Path

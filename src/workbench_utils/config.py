@@ -17,24 +17,26 @@ console = Console()
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "project": {
-        "name": "scRNAseq_Workbench_Analysis",
+        "name": "SMARTseq2_Workbench_Analysis",
         "random_seed": 42,
     },
     "data": {
-        "input_path": "data/raw/gene_cell_count_matrix.tsv",
+        "input_path": "data/raw/smartseq2_counts.tsv",
+        "metadata_path": "data/raw/plate_metadata.csv",
         "output_h5ad": "data/processed/analyzed_workbench.h5ad",
         "report_dir": "reports",
     },
     "qc": {
-        "min_genes": 200,
-        "max_genes": 8000,
-        "min_counts": 500,
-        "max_counts": 60000,
-        "max_pct_mito": 20.0,
-        "max_pct_ribo": 50.0,
-        "expected_doublet_rate": 0.06,
+        "min_genes": 1500,
+        "max_genes": 12000,
+        "min_counts": 50000,
+        "max_counts": 10000000,
+        "max_pct_mito": 15.0,
+        "max_pct_ribo": 40.0,
+        "max_pct_ercc": 15.0,
+        "run_doublet_detection": False,
+        "expected_doublet_rate": 0.02,
         "max_doublet_score": 0.35,
-        "run_doublet_detection": True,
     },
     "filter_genes": {
         "min_cells": 3,
@@ -55,7 +57,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "resolution": 0.8,
     },
     "differential_expression": {
-        "tool": "pydeseq2",
+        "engine": "deseq2_r",  # Hybrid v2 default: R DESeq2 reference implementation via rpy2
+        "tool": "deseq2_r",  # Alias for backward compatibility
+        "r_seed": 42,
         "design_factor": "condition",
         "min_cells_per_gene": 3,
         "fdr_cutoff": 0.05,
@@ -114,6 +118,24 @@ def validate_config(config: Dict[str, Any]) -> bool:
 
     if "random_seed" not in config["project"]:
         raise KeyError("Missing 'random_seed' in config['project'] (required for NFR-1)!")
+
+    if "differential_expression" in config:
+        de_cfg = config["differential_expression"]
+        engine = de_cfg.get("engine") or de_cfg.get("tool")
+        valid_engines = {
+            "deseq2_r",
+            "r_deseq2",
+            "deseq2",
+            "pydeseq2",
+            "deseq2_python",
+            "limma_voom_r",
+            "limma",
+        }
+        if engine and engine.lower().strip() not in valid_engines:
+            raise ValueError(
+                f"Invalid differential expression engine '{engine}'. "
+                f"Must be one of: {sorted(list(valid_engines))}"
+            )
 
     return True
 

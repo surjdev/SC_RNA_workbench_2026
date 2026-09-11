@@ -1,0 +1,75 @@
+# ==============================================================================
+# configs/smartseq2_plate_analysis.yaml
+# Multi-plate SMART-seq2 analysis with plate batch regression & FACS gating metadata
+# ==============================================================================
+
+project:
+  name: "SMARTseq2_MultiPlate_Analysis"
+  description: "96/384-well plate downstream workflow with ERCC spike-ins and plate batch adjustment"
+  author: "Bioinformatics Team"
+  version: "1.0.0"
+  random_seed: 42
+
+data:
+  input_path: "data/raw/smartseq2_counts.tsv"
+  metadata_path: "data/raw/plate_metadata.csv"
+  output_h5ad: "data/processed/analyzed_workbench.h5ad"
+  report_dir: "reports"
+  export_seurat: true
+  seurat_output_dir: "data/processed/seurat_export"
+
+qc:
+  mito_prefix:
+    - "MT-"
+    - "mt-"
+  ercc_prefix:
+    - "ERCC-"
+    - "ercc-"
+  min_genes: 2000
+  max_genes: 12000
+  min_counts: 100000
+  max_counts: 10000000
+  max_pct_mito: 12.0
+  max_pct_ribo: 40.0
+  max_pct_ercc: 12.0
+  run_doublet_detection: false
+
+filter_genes:
+  min_cells: 3
+
+normalization:
+  target_sum: 1000000.0 # CPM
+  log1p: true
+  n_top_genes: 3000
+  flavor: "seurat"
+
+reduction:
+  n_pcs: 30
+  n_neighbors: 15
+  metric: "cosine"
+  batch_key: "plate" # Plate-level batch integration
+
+clustering:
+  method: "leiden"
+  resolution: 0.8
+
+markers:
+  method: "wilcoxon"
+  n_genes: 25
+
+differential_expression:
+  tool: "pydeseq2"
+  design_factor: "condition"
+  batch_factor: "plate" # Adjust for plate batch in design formula: ~ plate + condition
+  contrast:
+    - "condition"
+    - "Treated"
+    - "Control"
+  min_cells_per_gene: 3
+  fdr_cutoff: 0.05
+  log2fc_cutoff: 1.0
+
+plotting:
+  palette: "nature"
+  dpi: 150
+  save_figures: true

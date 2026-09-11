@@ -1,7 +1,8 @@
-# Multi-Scenario Benchmark & Stress-Test Report
-## Single-Cell Transcriptomics Analysis Workbench
+# SMART-seq2 Multi-Scenario Benchmark & Stress-Test Report
+## Single-Cell Full-Length Transcriptomics Analysis Workbench
 
-**Date:** 2026-09-09 05:48:58
+**Date:** 2026-09-09 16:59:50
+**Platform:** Plate-based SMART-seq2 (96/384-well plates)
 **Environment:** Pixi / Python 3.12 (Scanpy 1.10+, PyDESeq2 0.5+)
 **Random Seed:** 42 (NFR-1 Deterministic Execution)
 
@@ -9,56 +10,53 @@
 
 ## 1. Summary of Benchmark Scenarios
 
-| Scenario | Biological Problem Modeled | Input Cells | Retained Cells | Tested Utilities & Tools | Status |
+| Scenario | Biological / Technical Problem Modeled | Input Wells | Retained Wells | Tested Utilities & Tools | Status |
 |---|---|:---:|:---:|---|:---:|
-| **Scenario 1** | Multi-Cell Type (CD4, CD8, B, Mono) + Dual-Batch + Treated vs Control | 400 | 400 | I/O (10x, CSV, H5AD, Backed, Seurat), QC, Harmony, Leiden, UMAP, PyDESeq2, Volcano | **PASS (100%)** |
-| **Scenario 2** | High Mitochondrial Stress (40% Apoptotic Cells) | 250 | 143 | QC Violins, Mitochondrial Filtering thresholding | **PASS (100%)** |
-| **Scenario 3** | High Multiplet Contamination (20% Doublets) | 250 | 241 | Scrublet doublet detection, score distribution | **PASS (100%)** |
+| **Scenario 1** | Multi-Plate SMART-seq2 (4 Plates = 384 cells) + Multi-Cell Types + Treatment | 384 | 384 | I/O (`load_smartseq2_matrix`), ERCC QC, Plate layout, CPM norm, Leiden, UMAP, PyDESeq2 GLM | **PASS (100%)** |
+| **Scenario 2** | Failed / Empty Wells (High ERCC Spike-in read % > 20%) | 96 | 72 | ERCC QC Violins, Plate Heatmap, `max_pct_ercc` filtering | **PASS (100%)** |
+| **Scenario 3** | High Mitochondrial Stress (Dying cells with membrane degradation) | 96 | 80 | QC Violins, `max_pct_mito` filtering | **PASS (100%)** |
 
 ---
 
-## 2. I/O Performance & Format Support
+## 2. I/O Performance & SMART-seq2 Format Support
 
-All formats loaded and validated without custom wrapper classes:
-- **10x Genomics MTX (matrix.mtx.gz, barcodes, features):** 0.0415s
-- **Dense / Sparse CSV matrix:** 0.0248s
-- **H5AD (AnnData Compressed):** 0.0199s
-- **Out-of-Core Backed Mode (`backed='r'`):** Verified streaming reads on disk (NFR-3)
-- **Seurat Export (`export_for_seurat`):** Successfully generated 10x MTX + `metadata.csv`
+- **SMART-seq2 Count Matrix (TSV) + Plate Metadata (CSV):** 0.0436s
+- **Generic Upstream Matrix (`load_upstream_matrix`):** 0.0366s
+- **Out-of-Core Backed Mode (`load_h5ad(..., backed='r')`):** Verified streaming reads on disk (NFR-3)
+- **Seurat Interoperability (`export_for_seurat`):** Successfully generated `counts.csv` + `metadata.csv`
 
 ---
 
 ## 3. Publication Figures Generated
 
-### Figure 1: Scenario 1 Quality Control Violins
-![Scenario 1 QC Violins](figures/01_scenario1_qc_violins.png)
+### Figure 1: SMART-seq2 Quality Control Violins (Read Counts, Genes, Mito %, ERCC %)
+![SMART-seq2 QC Violins](figures/01_smartseq2_qc_violins.png)
 
-### Figure 2: Scenario 1 UMAP Projections (Cell Types, Harmony Batches, Leiden Clusters)
-![Scenario 1 UMAP](figures/04_scenario1_umap_cell_types_and_harmony.png)
+### Figure 2: Plate 1 Well Read Depth Layout Heatmap (A01 to H12)
+![Plate Layout Heatmap](figures/02_smartseq2_plate_layout_heatmap.png)
 
-### Figure 3: Scenario 1 Marker Gene Rankings
-![Scenario 1 Markers](figures/05_scenario1_marker_genes_ranking.png)
+### Figure 3: Scenario 2 Failed / Empty Well Detection via ERCC Spike-ins (%)
+![Failed Wells ERCC](figures/03_smartseq2_high_ercc_failed_wells.png)
 
-### Figure 4: Scenario 1 PyDESeq2 Volcano Plot (Treated vs Control)
-![Scenario 1 Volcano](figures/06_scenario1_pydeseq2_volcano.png)
+### Figure 4: Scenario 1 UMAP Projections (Cell Types, SMART-seq2 Plates, Leiden Clusters)
+![SMART-seq2 UMAP](figures/04_smartseq2_umap_cell_types_and_plates.png)
 
-### Figure 5: Scenario 2 High Mitochondrial Stress QC
-![Scenario 2 High Mito](figures/02_scenario2_high_mito_qc.png)
+### Figure 5: Scenario 1 Marker Gene Rankings
+![SMART-seq2 Markers](figures/05_smartseq2_marker_genes_ranking.png)
 
-### Figure 6: Scenario 3 Scrublet Doublet Detection
-![Scenario 3 Doublets](figures/03_scenario3_scrublet_doublets.png)
+### Figure 6: Scenario 1 PyDESeq2 Full-Length Volcano Plot (Treated vs Control)
+![SMART-seq2 Volcano](figures/06_smartseq2_pydeseq2_volcano.png)
 
 ---
 
-## 4. PyDESeq2 Differential Expression Results
+## 4. PyDESeq2 Differential Expression Results on SMART-seq2 Counts
 
-- **Biological Design:** `~ condition` (Treated vs Control)
+- **Model Design:** `~ condition` (Negative Binomial GLM on raw full-length read counts)
 - **Significant Differentially Expressed Genes (padj < 0.05 & |log2FC| > 1.0):** 8 genes
-- **Top Induced Cytokines:** IFNG, STAT1, CXCL10, ISG15, MX1, OAS1, TNF, IL6
-- **Pseudo-bulk Aggregation Mode:** Verified (4 donor samples aggregated)
+- **Top Induced Cytokines:** OAS1, TNF, IL6, MX1, STAT1, CXCL10, ISG15, IFNG
 
 ---
 
 ## 5. Conclusion & Verification
 
-All core tools in `src/workbench_utils/` and their integration with Scanpy and PyDESeq2 have executed successfully across realistic biological scenarios with deterministic reproducibility.
+The workbench has been completely and successfully adapted to **SMART-seq2**. All utilities (I/O, ERCC spike-in QC, plate layout plotting, PyDESeq2 GLM modeling) executed with 100% success and deterministic reproducibility.

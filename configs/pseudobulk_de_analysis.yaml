@@ -12,13 +12,15 @@ data:
   output_h5ad: "data/processed/pseudobulk_analyzed.h5ad"
 
 differential_expression:
-  tool: "pydeseq2"
+  engine: "deseq2_r" # Primary DE engine: R DESeq2 reference implementation via rpy2 (FR-11)
+  tool: "deseq2_r" # Backward-compatible alias (can also set to 'pydeseq2')
+  r_seed: 42 # Seed for R random number generator (NFR-1)
   design_factor: "condition"
   sample_key: "sample_id" # Aggregate cells per biological sample (replicate)
   contrast:
     - "condition"
-    - "Disease"
-    - "Healthy"
+    - "Treated"
+    - "Control"
   min_cells_per_gene: 5
   fdr_cutoff: 0.05
   log2fc_cutoff: 1.0

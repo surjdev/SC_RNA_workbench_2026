@@ -75,6 +75,7 @@ jobs:
           pixi run python -m workbench_utils.config configs/default_analysis.yaml
           pixi run python -m workbench_utils.config configs/strict_qc_analysis.yaml
           pixi run python -m workbench_utils.config configs/pseudobulk_de_analysis.yaml
+          pixi run python -m workbench_utils.config configs/smartseq2_plate_analysis.yaml
 
       - name: Run Pytest Suite with Coverage
         run: |

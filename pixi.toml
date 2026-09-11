@@ -40,6 +40,17 @@ ruff = ">=0.4.0"
 pre-commit = ">=3.7.0"
 pip = ">=24.0"
 
+[feature.r-stats.dependencies]
+rpy2 = ">=3.5.11"
+r-base = ">=4.3.0"
+bioconductor-deseq2 = ">=1.42.0"
+bioconductor-limma = ">=3.58.0"
+bioconductor-edger = ">=4.0.0"
+
+[environments]
+default = { features = [] }
+r-stats = { features = ["r-stats"] }
+
 [tasks]
 install-editable = "pip install -e . --no-deps"
 lab = "python -m jupyterlab --ip=127.0.0.1 --port=8888 --no-browser"

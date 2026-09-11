@@ -1,33 +1,38 @@
 # ==============================================================================
 # configs/strict_qc_analysis.yaml
-# High-stringency QC configuration for datasets with elevated noise/debris
+# High-stringency QC configuration for SMART-seq2 plate-based sequencing
 # ==============================================================================
 
 project:
-  name: "scRNAseq_Strict_QC_Analysis"
+  name: "SMARTseq2_Strict_QC_Analysis"
   random_seed: 42
 
 qc:
-  min_genes: 500 # Stricter gene detection minimum
-  max_genes: 6000
-  min_counts: 1000 # Higher sequencing depth minimum
-  max_counts: 40000
+  mito_prefix:
+    - "MT-"
+    - "mt-"
+  ercc_prefix:
+    - "ERCC-"
+    - "ercc-"
+  min_genes: 2500 # Stricter gene detection minimum for deep sequencing
+  max_genes: 12000
+  min_counts: 150000 # Higher sequencing depth minimum (150k reads)
+  max_counts: 8000000
   max_pct_mito: 10.0 # Strict mitochondrial cut-off (healthy viable cells only)
-  max_pct_ribo: 40.0
-  run_doublet_detection: true
-  expected_doublet_rate: 0.08
-  max_doublet_score: 0.25 # Aggressive doublet filtering
+  max_pct_ribo: 35.0
+  max_pct_ercc: 10.0 # Strict ERCC cutoff (removes degraded or low-RNA cells)
+  run_doublet_detection: false
 
 filter_genes:
   min_cells: 5
 
 normalization:
-  target_sum: 10000.0
+  target_sum: 1000000.0 # CPM
   n_top_genes: 2500
 
 reduction:
-  n_pcs: 40
-  n_neighbors: 20
+  n_pcs: 30
+  n_neighbors: 15
 
 clustering:
   method: "leiden"

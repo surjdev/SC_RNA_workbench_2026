@@ -8,7 +8,7 @@ def test_load_default_config():
     assert "project" in cfg
     assert "qc" in cfg
     assert cfg["project"]["random_seed"] == 42
-    assert cfg["qc"]["min_genes"] == 200
+    assert cfg["qc"]["min_genes"] == 1500
 
 
 def test_load_custom_config(tmp_path):
@@ -25,7 +25,7 @@ def test_load_custom_config(tmp_path):
     assert cfg["project"]["random_seed"] == 99
     assert cfg["qc"]["min_genes"] == 350
     # Retains defaults for unspecified values
-    assert cfg["qc"]["min_counts"] == 500
+    assert cfg["qc"]["min_counts"] == 50000
 
 
 def test_config_errors_and_save(tmp_path):

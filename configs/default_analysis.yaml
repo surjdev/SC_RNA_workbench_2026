@@ -1,18 +1,19 @@
 # ==============================================================================
 # configs/default_analysis.yaml
-# Single-cell Transcriptomics Downstream Analysis Pipeline Configuration
+# SMART-seq2 Single-cell Full-Length Transcriptomics Analysis Pipeline Configuration
 # Complies with scRNAseq_Workbench_Requirements.md (FR-5, NFR-1)
 # ==============================================================================
 
 project:
-  name: "scRNAseq_Default_Analysis"
-  description: "Standard downstream single-cell QC, clustering, and DE pipeline"
+  name: "SMARTseq2_Default_Analysis"
+  description: "Standard downstream SMART-seq2 plate-based QC, clustering, and PyDESeq2 pipeline"
   author: "Bioinformatics Team"
-  version: "1.0.0"
+  version: "2.0.0"
   random_seed: 42 # Fixed seed for complete numerical reproducibility (NFR-1)
 
 data:
-  input_path: "data/raw/gene_cell_count_matrix.tsv"
+  input_path: "data/raw/smartseq2_counts.tsv"
+  metadata_path: "data/raw/plate_metadata.csv"
   output_h5ad: "data/processed/analyzed_workbench.h5ad"
   report_dir: "reports"
   export_seurat: true
@@ -27,24 +28,28 @@ qc:
     - "RPL"
     - "rps"
     - "rpl"
-  min_genes: 200 # Minimum detected genes per cell
-  max_genes: 7500 # Maximum detected genes (filter potential multiplets)
-  min_counts: 500 # Minimum total UMI read counts per cell
-  max_counts: 50000 # Maximum total UMI read counts
-  max_pct_mito: 20.0 # Maximum allowed mitochondrial read percentage (%)
-  max_pct_ribo: 50.0 # Maximum allowed ribosomal read percentage (%)
-  run_doublet_detection: true
-  expected_doublet_rate: 0.06 # Estimated doublet rate from microfluidic loading
-  max_doublet_score: 0.35 # Threshold to classify cell as doublet
+  ercc_prefix:
+    - "ERCC-"
+    - "ercc-"
+  min_genes: 1500 # Minimum detected genes per well (SMART-seq2 full-length depth)
+  max_genes: 12000 # Maximum detected genes
+  min_counts: 50000 # Minimum total read depth per well
+  max_counts: 10000000 # Maximum total read counts
+  max_pct_mito: 15.0 # Maximum allowed mitochondrial read percentage (%)
+  max_pct_ribo: 40.0 # Maximum allowed ribosomal read percentage (%)
+  max_pct_ercc: 15.0 # Maximum allowed ERCC spike-in read percentage (%)
+  run_doublet_detection: false # Disabled by default for FACS single-cell sorted plates
+  expected_doublet_rate: 0.02
+  max_doublet_score: 0.35
 
 filter_genes:
   min_cells: 3 # Retain genes detected in at least this many cells
 
 normalization:
-  target_sum: 10000.0 # Standard library size scaling (CPM / 10k)
+  target_sum: 1000000.0 # Counts per million (CPM) standard for full-length sequencing
   log1p: true # Natural log(x + 1) transformation
-  n_top_genes: 2000 # Number of highly variable genes (HVGs) to select
-  flavor: "seurat" # Scanpy HVG flavor: 'seurat' or 'cell_ranger'
+  n_top_genes: 2500 # Number of highly variable genes (HVGs) to select
+  flavor: "seurat"
 
 reduction:
   n_pcs: 30 # Number of principal components
@@ -62,7 +67,9 @@ markers:
   n_genes: 20 # Number of top marker genes per cluster to export
 
 differential_expression:
-  tool: "pydeseq2" # Negative Binomial GLM differential expression
+  engine: "deseq2_r" # Primary DE engine: R DESeq2 reference implementation via rpy2 (FR-11)
+  tool: "deseq2_r" # Backward-compatible alias (can also set to 'pydeseq2')
+  r_seed: 42 # Seed for R random number generator (NFR-1)
   design_factor: "condition" # Metadata column to test
   contrast:
     - "condition"

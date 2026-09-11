@@ -62,3 +62,43 @@ def test_export_for_seurat(sample_adata, tmp_path):
     assert (export_dir / "counts.csv").exists()
     assert (export_dir / "metadata.csv").exists()
     assert (export_dir / "embeddings.csv").exists()
+
+
+def test_load_smartseq2_matrix(tmp_path):
+    from workbench_utils import load_smartseq2_matrix
+
+    counts_file = tmp_path / "smartseq2_counts.tsv"
+    meta_file = tmp_path / "plate_meta.csv"
+
+    genes = ["GAPDH", "ACTB", "ERCC-00001", "ERCC-00002"]
+    cells = ["Plate1_A01", "Plate1_A02", "Plate2_B05"]
+
+    counts_df = pd.DataFrame(
+        np.array(
+            [
+                [1000, 1500, 2000],
+                [800, 900, 1100],
+                [50, 60, 40],
+                [30, 40, 20],
+            ]
+        ),
+        index=genes,
+        columns=cells,
+    )
+    counts_df.to_csv(counts_file, sep="\t")
+
+    meta_df = pd.DataFrame(
+        {"treatment": ["Control", "Control", "Treated"], "donor": ["D1", "D1", "D2"]},
+        index=cells,
+    )
+    meta_df.to_csv(meta_file)
+
+    adata = load_smartseq2_matrix(counts_file, metadata_path=meta_file, transpose=True)
+    assert adata.n_obs == 3
+    assert adata.n_vars == 4
+    assert adata.var["is_ercc"].sum() == 2
+    assert "treatment" in adata.obs
+    assert "plate" in adata.obs
+    assert "well_row" in adata.obs
+    assert adata.obs.loc["Plate1_A01", "well_row"] == "A"
+    assert adata.obs.loc["Plate1_A01", "well_col"] == 1

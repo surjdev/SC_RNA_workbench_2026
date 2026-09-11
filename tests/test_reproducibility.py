@@ -10,7 +10,12 @@ import pytest
 import scanpy as sc
 
 from workbench_utils import load_config
-from workbench_utils.de import prepare_pydeseq2_data, run_pydeseq2
+from workbench_utils.de import (
+    prepare_pseudobulk_data,
+    prepare_pydeseq2_data,
+    run_de,
+    run_pydeseq2,
+)
 from workbench_utils.qc import calculate_qc_metrics, detect_doublets
 
 
@@ -25,6 +30,8 @@ def reproducible_adata():
             {
                 "condition": ["Control"] * 40 + ["Treated"] * 40,
                 "batch": (["B1", "B2"] * 40),
+                "sample_id": [f"ctrl_{i % 4}" for i in range(40)]
+                + [f"treat_{i % 4}" for i in range(40)],
             },
             index=[f"cell_{i}" for i in range(n_cells)],
         ),
@@ -126,4 +133,47 @@ def test_pydeseq2_reproducibility(reproducible_adata):
         stat_res2["log2FoldChange"].values,
         rtol=1e-5,
         err_msg="PyDESeq2 log2FoldChange differs between identical runs!",
+    )
+
+
+def test_pseudobulk_and_run_de_reproducibility(reproducible_adata):
+    """Verify that pseudobulk aggregation and run_de produce identical outputs across repeated runs."""
+    counts1, meta1 = prepare_pseudobulk_data(
+        reproducible_adata,
+        design_factor="condition",
+        sample_key="sample_id",
+        min_cells_per_gene=3,
+    )
+    counts2, meta2 = prepare_pseudobulk_data(
+        reproducible_adata,
+        design_factor="condition",
+        sample_key="sample_id",
+        min_cells_per_gene=3,
+    )
+
+    pd.testing.assert_frame_equal(counts1, counts2)
+    pd.testing.assert_frame_equal(meta1, meta2)
+
+    res1 = run_de(
+        counts_df=counts1,
+        clinical_df=meta1,
+        design_factors="condition",
+        contrast=("condition", "Treated", "Control"),
+        engine="pydeseq2",
+        quiet=True,
+    )
+    res2 = run_de(
+        counts_df=counts2,
+        clinical_df=meta2,
+        design_factors="condition",
+        contrast=("condition", "Treated", "Control"),
+        engine="pydeseq2",
+        quiet=True,
+    )
+
+    np.testing.assert_allclose(
+        res1["log2FoldChange"].values,
+        res2["log2FoldChange"].values,
+        rtol=1e-5,
+        err_msg="run_de with pydeseq2 differs between identical runs!",
     )

@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "workbench-utils"
-version = "0.1.0"
-description = "Downstream Single-Cell Analysis Workbench Utilities (Scanpy, PyDESeq2, AnnData)"
+version = "0.2.0"
+description = "Downstream Single-Cell Analysis Workbench (Hybrid R/Python with Scanpy, DESeq2-R, PyDESeq2)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -53,6 +53,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+r-stats = [
+    "rpy2>=3.5.11",
+]
 notebooks = [
     "jupyterlab>=4.1.0",
     "ipykernel>=6.29.0",
@@ -70,7 +73,7 @@ dev = [
     "pre-commit>=3.7.0",
 ]
 all = [
-    "workbench-utils[notebooks,dev]",
+    "workbench-utils[r-stats,notebooks,dev]",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -1,7 +1,7 @@
-# Single-Cell Transcriptomics Workbench: Comprehensive User Guide
-## คู่มือการติดตั้ง การตั้งค่าสภาพแวดล้อม และการนำเข้าข้อมูลสู่การวิเคราะห์จริง
+# SMART-seq2 Transcriptomics Workbench: Comprehensive User Guide
+## คู่มือการติดตั้ง การตั้งค่าสภาพแวดล้อม และการนำเข้าข้อมูล SMART-seq2 เข้าสู่การวิเคราะห์จริง
 
-เอกสารคู่มือฉบับนี้จัดทำขึ้นเพื่อแนะนำขั้นตอนการใช้งาน **Downstream Single-Cell Transcriptomics Analysis Workbench** ตั้งแต่ขั้นตอนแรกสุด (Installation) จนถึงการนำไฟล์ข้อมูลดิบทางชีววิทยาประเภทต่างๆ เข้าสู่ Pipeline การวิเคราะห์
+เอกสารคู่มือฉบับนี้จัดทำขึ้นเพื่อแนะนำขั้นตอนการใช้งาน **SMART-seq2 Plate-Based Single-Cell Transcriptomics Analysis Workbench** ตั้งแต่ขั้นตอนแรกสุด (Installation) จนถึงการนำไฟล์ข้อมูลดิบ Full-Length Read Counts และ Plate/Well Metadata เข้าสู่ Pipeline การวิเคราะห์เชิงลึก
 
 ---
 
@@ -12,12 +12,12 @@
    - [ทางเลือกที่ 1: ติดตั้งผ่าน Pixi (แนะนำ - เร็วและล็อกเวอร์ชัน 100%)](#21-ติดตั้งผ่าน-pixi-recommended)
    - [ทางเลือกที่ 2: ติดตั้งผ่าน Conda / Mamba (มาตรฐานชีวสารสนเทศ)](#22-ติดตั้งผ่าน-conda--mamba)
    - [การตรวจสอบความพร้อมของระบบ (System Verification)](#23-การตรวจสอบความพร้อมของระบบ)
-3. [คู่มือการนำเข้าข้อมูลดิบ (Data Ingestion Guide)](#3-คู่มือการนำเข้าข้อมูลดิบ-data-ingestion-guide)
-   - [1. โฟลเดอร์ 10x Genomics Cell Ranger Matrix (`.mtx.gz`)](#31-โฟลเดอร์-10x-genomics-cell-ranger-matrix)
-   - [2. ไฟล์ 10x Genomics HDF5 (`.h5`)](#32-ไฟล์-10x-genomics-hdf5-h5)
-   - [3. ไฟล์ AnnData (`.h5ad`)](#33-ไฟล์-anndata-h5ad)
-   - [4. ไฟล์ Loom Format (`.loom`)](#34-ไฟล์-loom-format-loom)
-   - [5. ไฟล์ตารางข้อความ CSV / TSV Counts Matrix](#35-ไฟล์ตารางข้อความ-csv--tsv-counts-matrix)
+3. [คู่มือการนำเข้าข้อมูลดิบ SMART-seq2 (SMART-seq2 Data Ingestion Guide)](#3-คู่มือการนำเข้าข้อมูลดิบ-smart-seq2-smart-seq2-data-ingestion-guide)
+   - [1. การนำเข้า Matrix ผลลัพธ์จาก Upstream Pipelines (STAR, RSEM, featureCounts, Kallisto)](#31-การนำเข้า-matrix-ผลลัพธ์จาก-upstream-pipelines)
+   - [2. การนำเข้าข้อมูล Plate & Well Metadata (96/384-Well Layout)](#32-การนำเข้าข้อมูล-plate--well-metadata-96384-well-layout)
+   - [3. การตรวจวัด Ambion ERCC Spike-in Controls และการแยกแยะหลุมที่ล้มเหลว (Failed Wells)](#33-การตรวจวัด-ambion-ercc-spike-in-controls-และการแยกแยะหลุมที่ล้มเหลว)
+   - [4. การตรวจสอบรูปแบบเชิงพื้นที่ของ Plate (Plate Layout Heatmaps)](#34-การตรวจสอบรูปแบบเชิงพื้นที่ของ-plate-plate-layout-heatmaps)
+   - [5. ไฟล์ AnnData (`.h5ad`) และ Loom (`.loom`)](#35-ไฟล์-anndata-h5ad-และ-loom-loom)
    - [6. การจัดการข้อมูลขนาดใหญ่ด้วย AnnData Backed Mode (`backed='r'`)](#36-การจัดการข้อมูลขนาดใหญ่ด้วย-anndata-backed-mode-backedr)
    - [7. การส่งออกข้อมูลข้ามภาษาไปยัง R / Seurat (`export_for_seurat`)](#37-การส่งออกข้อมูลข้ามภาษาไปยัง-r--seurat)
 4. [การกำหนดค่าพารามิเตอร์ผ่านไฟล์ Config (YAML Configuration)](#4-การกำหนดค่าพารามิเตอร์ผ่านไฟล์-config)
@@ -31,28 +31,36 @@
 
 ## 1. ปรัชญาการออกแบบและสถาปัตยกรรม
 
-Workbench นี้ถูกสร้างขึ้นภายใต้หลักการสำคัญตามเอกสารข้อกำหนด [scRNAseq_Workbench_Requirements.md](file:///home/surj/Workspace/SC_RNA_workbench_2026/scRNAseq_Workbench_Requirements.md):
+Workbench นี้ถูกสร้างขึ้นเพื่อรองรับเทคโนโลยี **SMART-seq2 (Switching Mechanism at 5' End of RNA Template)** ซึ่งเป็นการจัดลำดับแบบ Plate-Based Full-Length Transcriptomics (96-well หรือ 384-well plates) โดยยึดหลักการสำคัญ:
 
-- **No Custom Wrapper Class (NFR-5):** เครื่องมือใน `src/workbench_utils/` เป็น **Helper Functions อิสระ** ไม่มีคลาส Monolithic (เช่น `SingleCellWorkbench`) มาครอบ นักวิเคราะห์สามารถเรียกใช้ native APIs ของ `scanpy`, `pydeseq2`, `anndata`, `scikit-learn` ได้อย่างอิสระ 100%
-- **Zero Notebook Output Noise (FR-3, NFR-6):** ทำงานร่วมกับ `jupytext` (จับคู่ `.ipynb` และ `.py:percent`) และ `nbstripout` ทำให้ Git diff มีเฉพาะบรรทัดโค้ดที่แก้ไข ไม่มี cell output ปะปน
-- **Config-Driven Parameterization (FR-5, NFR-1):** พารามิเตอร์สำคัญทุกอย่าง (เช่น QC cutoffs, random seed, clustering resolution, contrast) ถูกแยกออกจากโค้ดและบรรจุอยู่ในไฟล์ `configs/*.yaml`
+- **No Custom Wrapper Class (NFR-5):** เครื่องมือใน `src/workbench_utils/` เป็น **Helper Functions อิสระ** ไม่มีคลาส Monolithic มาครอบ นักวิเคราะห์สามารถเรียกใช้ native APIs ของ `scanpy`, `pydeseq2`, `anndata`, `scikit-learn` ได้อย่างอิสระ 100%
+- **Full-Length Deep Sequencing Biology:** รองรับความลึกการอ่าน 500,000 – 5,000,000 raw read counts ต่อเซลล์ และตรวจพบยีน 4,000 – 10,000 ยีนต่อเซลล์ แตกต่างจากเทคโนโลยี droplet ที่มีความลึกต่ำและ dropout สูง
+- **Native PyDESeq2 Negative Binomial GLM:** เนื่องจาก SMART-seq2 เป็น Full-length read counts ข้อมูลจึงเข้ากันได้โดยตรงกับโมเดลการแจกแจงแบบ Negative Binomial ของ DESeq2 โดยไม่ต้องพึ่งพา pseudo-bulk approximation
+- **Zero Notebook Output Noise (FR-3, NFR-6):** ทำงานร่วมกับ `jupytext` (จับคู่ `.ipynb` และ `.py:percent`) และ `nbstripout` ทำให้ Git diff มีเฉพาะบรรทัดโค้ดที่แก้ไข
+- **Config-Driven Parameterization (FR-5, NFR-1):** พารามิเตอร์สำคัญทุกอย่าง (เช่น QC cutoffs, random seed, ERCC thresholds, clustering resolution, contrast) บรรจุอยู่ในไฟล์ `configs/*.yaml`
 
 ```text
 SC_RNA_workbench_2026/
-├── configs/                     # YAML configuration files (QC cutoffs, seeds, DE contrasts)
+├── configs/                     # YAML configuration files (SMART-seq2 QC cutoffs, seeds, contrasts)
+│   ├── default_analysis.yaml    # มาตรฐาน SMART-seq2 (CPM 1M, ERCC max 15%, counts > 50k)
+│   ├── strict_qc_analysis.yaml  # High-stringency QC สำหรับ plate ที่มี dead cells สูง
+│   └── smartseq2_plate_analysis.yaml # Multi-plate batch analysis
 ├── data/
-│   ├── raw/                     # ไฟล์ข้อมูลดิบ (10x, h5ad, loom) Tracked by Git LFS
+│   ├── raw/                     # ไฟล์ข้อมูลดิบ (TSV, CSV, h5ad) Tracked by Git LFS
 │   └── processed/               # ไฟล์ AnnData ที่ผ่าน QC, clustering, annotation
 ├── docs/                        # เอกสารคู่มือและ workflow documentation
 ├── notebooks/                   # Jupyter Notebooks จับคู่กับ Jupytext .py:percent
+│   ├── 01_qc_and_filtering.py   # Plate ingestion, ERCC QC, plate layout heatmaps
+│   ├── 02_clustering_and_annotation.py # CPM norm (exclude ERCC), PCA, UMAP, Leiden
+│   └── 03_differential_expression_pydeseq2.py # PyDESeq2 GLM on raw full-length read counts
 ├── reports/                     # HTML reports สร้างอัตโนมัติจาก Papermill + figures
-├── scripts/                     # Shell scripts (init_workbench.sh, run_notebook.sh)
+├── scripts/                     # Shell scripts (init_workbench.sh, run_notebook.sh, benchmark)
 ├── src/workbench_utils/         # Core helper functions (io, qc, de, plotting, config)
-├── tests/                       # Unit tests & acceptance tests (pytest)
+├── tests/                       # Unit tests & acceptance tests (pytest - 100% pass)
 ├── .gitattributes               # Git LFS routing rules
 ├── .pre-commit-config.yaml      # Automated code quality and notebook output stripping
 ├── environment.yml              # Conda/Mamba environment specification (≤ 2 commands)
-├── pixi.toml / pixi.lock        # Pixi reproducible dependency lockfile
+├── pixi.toml / pixi.lock        # Pixi reproducible binary lockfile
 ├── pyproject.toml               # Python package metadata and tool configs
 └── Makefile                     # Pipeline command shortcuts
 ```
@@ -98,7 +106,7 @@ Pixi เป็น package manager ยุคใหม่สำหรับวิ�
 1. **สร้าง Environment จาก `environment.yml` (คำสั่งเดียวตาม NFR-2):**
    ```bash
    mamba env create -f environment.yml
-   # หากไม่มี mamba สามารถใช้ conda env create -f environment.yml ได้เช่นกัน
+   # หรือ: conda env create -f environment.yml
    ```
 
 2. **เปิดใช้งาน Environment:**
@@ -106,17 +114,13 @@ Pixi เป็น package manager ยุคใหม่สำหรับวิ�
    conda activate sc_workbench
    ```
 
-3. **ติดตั้งแพ็กเกจ `workbench_utils` แบบ Editable (`-e .`):**
+3. **ติดตั้ง workbench package ในโหมด editable:**
    ```bash
    pip install -e .
-   ```
-
-4. **ติดตั้ง Git Pre-commit Hooks:**
-   ```bash
    pre-commit install
    ```
 
-5. **ลงทะเบียน Jupyter Kernel (เพื่อให้เลือก Kernel ใน Notebook ได้):**
+4. **ลงทะเบียน Jupyter Kernel:**
    ```bash
    python -m ipykernel install --user --name sc_workbench --display-name "Python 3.12 (sc_workbench)"
    ```
@@ -138,121 +142,90 @@ make test
 
 ---
 
-## 3. คู่มือการนำเข้าข้อมูลดิบ (Data Ingestion Guide)
+## 3. คู่มือการนำเข้าข้อมูลดิบ SMART-seq2 (SMART-seq2 Data Ingestion Guide)
 
-ฟังก์ชัน `workbench_utils.io.load_upstream_matrix` ถูกออกแบบมาเพื่อตรวจจับและโหลดไฟล์ข้อมูลดิบได้หลากหลายรูปแบบอัตโนมัติ โดยส่งคืนอ็อบเจกต์ `anndata.AnnData` มาตรฐานที่พร้อมส่งต่อให้ `scanpy` ใช้งานต่อได้ทันที
+ฟังก์ชัน `workbench_utils.io.load_smartseq2_matrix` และ `load_upstream_matrix` ถูกออกแบบมาเพื่อนำเข้าผลลัพธ์จาก Upstream Processing Pipelines ของ SMART-seq2 ได้อย่างสมบูรณ์แบบ
 
-### 3.1 โฟลเดอร์ 10x Genomics Cell Ranger Matrix
+### 3.1 การนำเข้า Matrix ผลลัพธ์จาก Upstream Pipelines
 
-ผลลัพธ์จาก Cell Ranger count มักจะอยู่ในโฟลเดอร์ `filtered_feature_bc_matrix/` ซึ่งประกอบด้วย 3 ไฟล์:
-- `matrix.mtx.gz` (หรือ `matrix.mtx`)
-- `barcodes.tsv.gz` (หรือ `barcodes.tsv`)
-- `features.tsv.gz` (หรือ `genes.tsv.gz`)
+ในโปรโตคอล SMART-seq2 ขั้นตอน Upstream (Aligner + Quantifier) เช่น **STAR + RSEM**, **HISAT2 + featureCounts**, หรือ **Salmon / Kallisto** จะส่งออกเมทริกซ์การนับยีน (Gene Expression Count Matrix) ออกมาในรูปแบบ TSV หรือ CSV โดยปกติจะมีโครงสร้าง:
+- **แถว (Rows):** รหัสยีนหรือสัญลักษณ์ยีน เช่น `ENSG00000...` หรือ `TP53`, รวมถึง Spike-in controls เช่น `ERCC-00002`
+- **คอลัมน์ (Columns):** รหัสหลุมหรือเซลล์ เช่น `Plate1_A01`, `Plate1_A02`, ..., `Plate1_H12`
 
-**วิธีนำเข้า:**
+**วิธีนำเข้าด้วย `load_smartseq2_matrix`:**
 ```python
-from workbench_utils.io import load_upstream_matrix
+from workbench_utils.io import load_smartseq2_matrix
 
-# ชี้ path ไปที่โฟลเดอร์ที่บรรจุ 3 ไฟล์ดังกล่าว
-adata = load_upstream_matrix(
-    path="data/raw/pbmc_sample/filtered_feature_bc_matrix",
-    file_format="10x_mtx"
+adata = load_smartseq2_matrix(
+    count_path="data/raw/smartseq2_counts.tsv",
+    metadata_path="data/raw/plate_metadata.csv",
+    transpose=True,  # แปลงแถวยีนเป็นคอลัมน์ และคอลัมน์เซลล์เป็นแถว
+    ercc_prefix=("ERCC-", "ercc-"),
 )
 
 print(adata)
-# Output: AnnData object with n_obs × n_vars = 2700 × 32738
-```
-
-หรือใช้ Scanpy Native API โดยตรง:
-```python
-import scanpy as sc
-
-adata = sc.read_10x_mtx(
-    "data/raw/pbmc_sample/filtered_feature_bc_matrix",
-    var_names="gene_symbols",
-    cache=True
-)
+# Output: AnnData object with n_obs × n_vars = 384 wells × 24,000 features
+# adata.var['is_ercc'] จะเป็น True สำหรับยีนที่เป็น ERCC spike-in controls อัตโนมัติ
 ```
 
 ---
 
-### 3.2 ไฟล์ 10x Genomics HDF5 (`.h5`)
+### 3.2 การนำเข้าข้อมูล Plate & Well Metadata (96/384-Well Layout)
 
-Cell Ranger ส่งออกไฟล์ `.h5` เช่น `filtered_feature_bc_matrix.h5` ซึ่งรวมทั้ง matrix และ metadata ไว้ในไฟล์เดียว:
+ไฟล์ Plate Metadata (`plate_metadata.csv`) ช่วยระบุข้อมูลตำแหน่งเชิงกายภาพของหลุมในแผ่นทดสอบ ข้อมูลผู้บริจาค (Donor) และสภาวะการทดลอง (Condition):
 
-**วิธีนำเข้า:**
+| well_id | plate | well | well_row | well_col | condition | donor |
+|---|---|---|---|---|---|---|
+| Plate1_A01 | Plate1 | A01 | A | 1 | Treated | Donor_1 |
+| Plate1_A02 | Plate1 | A02 | A | 2 | Treated | Donor_1 |
+| Plate1_H12 | Plate1 | H12 | H | 12 | Control | Donor_2 |
+
+หากไฟล์ Metadata มีคอลัมน์ `well` (เช่น `A01` ถึง `H12`) ระบบจะแยก `well_row` (ตัวอักษร A-H) และ `well_col` (ตัวเลข 1-12 หรือ 1-24) ให้โดยอัตโนมัติ เพื่อนำไปสร้าง Plate Layout Heatmap
+
+---
+
+### 3.3 การตรวจวัด Ambion ERCC Spike-in Controls และการแยกแยะหลุมที่ล้มเหลว
+
+ใน SMART-seq2 จะมีการเติมสารควบคุมสังเคราะห์ **Ambion ERCC RNA Spike-In Control Mix** ปริมาณคงที่ลงในทุกหลุมก่อนทำ Reverse Transcription:
+- **หลุมปกติ (Healthy single cells):** ปริมาณ endogenous cellular RNA มีสูงมาก ทำให้สัดส่วน ERCC spike-ins คิดเป็นเพียง **2% - 5%** ของ read ทั้งหมด
+- **หลุมที่การแยกเซลล์ล้มเหลว (Empty Wells / FACS sorting failures):** ไม่มีเซลล์อยู่ในหลุม หรือเซลล์แตกสลายก่อน Reverse Transcription ทำให้ endogenous RNA ต่ำมาก ส่งผลให้สัดส่วน ERCC พุ่งสูงเกิน **20% - 80%** ของ read ทั้งหมด
+
 ```python
-from workbench_utils.io import load_upstream_matrix
+from workbench_utils.qc import calculate_qc_metrics, filter_cells
 
-adata = load_upstream_matrix(
-    path="data/raw/sample_filtered_feature_bc_matrix.h5",
-    file_format="10x_h5"
-)
-```
+# 1. คำนวณ QC metrics รวมถึง pct_counts_ercc
+calculate_qc_metrics(adata, ercc_prefix=("ERCC-", "ercc-"))
 
-หรือใช้ Scanpy Native API:
-```python
-import scanpy as sc
-
-adata = sc.read_10x_h5("data/raw/sample_filtered_feature_bc_matrix.h5")
-adata.var_names_make_unique()
+# 2. กรองหลุมที่ล้มเหลวทิ้ง (ค่า default: max_pct_ercc = 15.0%)
+filtered_adata = filter_cells(adata, max_pct_ercc=15.0, min_counts=50000, min_genes=1500)
+print(f"Retained wells: {filtered_adata.n_obs} / {adata.n_obs}")
 ```
 
 ---
 
-### 3.3 ไฟล์ AnnData (`.h5ad`)
+### 3.4 การตรวจสอบรูปแบบเชิงพื้นที่ของ Plate (Plate Layout Heatmaps)
 
-ไฟล์มาตรฐานของ Scanpy และ Single-Cell Python stack:
+เพื่อตรวจสอบความผิดพลาดของหุ่นยนต์หยอดสาร (Liquid handler dispenser), การระเหยของของเหลวบริเวณขอบแผ่น (Edge effects), หรือปัญหาการเรียงลำดับหัว pipette:
 
-**วิธีนำเข้า:**
 ```python
-from workbench_utils.io import load_upstream_matrix
+from workbench_utils.plotting import plot_plate_layout
 
-adata = load_upstream_matrix(
-    path="data/raw/reference_dataset.h5ad",
-    file_format="h5ad"
-)
-```
+# ตรวจสอบความลึกของการอ่านในแต่ละหลุมบน Plate 1 (Rows A-H, Cols 1-12)
+fig_depth = plot_plate_layout(adata, plate_id="Plate1", color_key="total_counts")
 
-หรือใช้ Scanpy Native API:
-```python
-import scanpy as sc
-
-adata = sc.read_h5ad("data/raw/reference_dataset.h5ad")
+# ตรวจสอบสัดส่วน ERCC spike-ins เพื่อดูตำแหน่งหลุมเปล่า
+fig_ercc = plot_plate_layout(adata, plate_id="Plate1", color_key="pct_counts_ercc")
 ```
 
 ---
 
-### 3.4 ไฟล์ Loom Format (`.loom`)
+### 3.5 ไฟล์ AnnData (`.h5ad`) และ Loom (`.loom`)
 
-ไฟล์ Loom มักพบในงานวิเคราะห์ RNA Velocity (velocyto) หรือข้อมูลจาก Human Cell Atlas:
-
-**วิธีนำเข้า:**
+หากได้รับไฟล์ที่เป็น AnnData หรือ Loom อยู่แล้ว:
 ```python
 from workbench_utils.io import load_upstream_matrix
 
-adata = load_upstream_matrix(
-    path="data/raw/sample_velocity.loom",
-    file_format="loom"
-)
-```
-
----
-
-### 3.5 ไฟล์ตารางข้อความ CSV / TSV Counts Matrix
-
-ในกรณีที่ได้รับข้อมูลนับดิบ (Raw Counts) จากงานวิจัยอื่นในรูปแบบ `.csv` หรือ `.tsv`:
-- แถว (Rows): เซลล์ (Cell Barcodes) หรือ ยีน (Genes)
-- คอลัมน์ (Columns): ยีน หรือ เซลล์
-
-**วิธีนำเข้า:**
-```python
-from workbench_utils.io import load_upstream_matrix
-
-adata = load_upstream_matrix(
-    path="data/raw/counts_matrix.csv",
-    file_format="csv"
-)
+adata = load_upstream_matrix("data/raw/smartseq2_processed.h5ad", file_format="h5ad")
 ```
 
 ---
@@ -328,36 +301,50 @@ print(seurat_obj)
 ### ตัวอย่าง: `configs/default_analysis.yaml`
 ```yaml
 project:
-  name: "scRNAseq_Default_Analysis"
+  name: "SMARTseq2_Default_Analysis"
   random_seed: 42
 
+data:
+  input_path: null
+  metadata_path: null
+  format: "smartseq2"
+  transpose_counts: true
+
 qc:
-  min_counts: 500
-  max_counts: 35000
-  min_genes: 200
-  max_genes: 6000
-  max_pct_counts_mt: 20.0
-  max_pct_counts_ribo: 50.0
-  doublet_rate: 0.06
+  min_counts: 50000        # SMART-seq2 read depth 500k-5M reads
+  max_counts: 10000000
+  min_genes: 1500          # ยีนที่ตรวจพบ > 1,500 - 4,000 ยีน
+  max_genes: 12000
+  mito_prefix: ["MT-", "mt-"]
+  max_pct_mito: 15.0
+  ribo_prefix: ["RPS", "RPL"]
+  max_pct_ribo: 40.0
+  ercc_prefix: ["ERCC-", "ercc-"]
+  max_pct_ercc: 15.0       # กรองหลุมเปล่า/หลุมที่ FACS sort พลาด (ERCC > 15%)
+  run_doublet_detection: false  # FACS sort 1 cell/well อัตรา doublet ต่ำมาก
 
 normalization:
-  target_sum: 10000
-  n_top_genes: 2000
+  target_sum: 1000000.0    # Counts Per Million (CPM)
+  log1p: true
+  n_top_genes: 2500
   flavor: "seurat"
 
 reduction:
   n_pcs: 30
   n_neighbors: 15
+  metric: "cosine"
+  umap_min_dist: 0.5
 
 clustering:
-  resolution: 0.8
+  resolution: 0.6
   algorithm: "leiden"
 
 differential_expression:
   design_factor: "condition"
   contrast: ["condition", "Treated", "Control"]
-  padj_cutoff: 0.05
+  fdr_cutoff: 0.05
   log2fc_cutoff: 1.0
+  min_cells_per_gene: 5
 ```
 
 ### การโหลดและ Validate Config ใน Python หรือ CLI:
@@ -385,9 +372,9 @@ make validate-config CONFIG=configs/default_analysis.yaml
 เหมาะสำหรับการทดลองและสำรวจข้อมูลแบบ Real-time:
 1. เปิด JupyterLab ด้วย `make lab`
 2. เปิดไฟล์ในโฟลเดอร์ `notebooks/`:
-   - `01_qc_and_filtering.ipynb`: Data Ingestion, QC Violins, Scrublet Doublet Detection, Filtering
-   - `02_clustering_and_annotation.ipynb`: Normalization, HVG, PCA, Harmony Integration, Leiden, UMAP, Cell Typing
-   - `03_differential_expression_pydeseq2.ipynb`: Raw count extraction, PyDESeq2 GLM DE Analysis, Volcano Plot
+   - `01_qc_and_filtering.ipynb`: SMART-seq2 Ingestion, ERCC Spike-ins & Mito QC Violins, Plate Layout Heatmaps, Failed Well Filtering
+   - `02_clustering_and_annotation.ipynb`: Endogenous CPM Normalization (excluding ERCC), HVG, PCA, Plate Batch Inspection, UMAP, Leiden, Biomarkers
+   - `03_differential_expression_pydeseq2.ipynb`: Raw full-length count extraction, PyDESeq2 Negative Binomial GLM Modeling, Volcano Plot, Table Export
 3. เมื่อแก้ไขโค้ดใน JupyterLab ระบบ `jupytext` จะซิงค์การเปลี่ยนแปลงไปยังไฟล์ `.py` ที่เป็นคู่กันทันที
 
 ---

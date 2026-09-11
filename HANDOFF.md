@@ -26,6 +26,7 @@
 | **Part 6** | Parameterized Execution & Report Generation (Papermill/Make) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (Papermill & HTML report OK) |
 | **Part 7** | Template Notebooks (QC, Clustering, PyDESeq2) & README | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (3 templates & README OK) |
 | **Part 8** | CI/CD Pipeline (GitHub Actions) & Final Acceptance | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (CI workflow & Acceptance OK) |
+| **Part 9** | v2.0 Hybrid R/Python Architecture Migration (FR-11, FR-12, FR-13) | ✅ Completed | AI Agent | 2026-09-09 | [x] ผ่าน (R interop, 42 tests & template 03 OK) |
 
 ---
 
@@ -156,6 +157,37 @@
   - [x] **Criterion 4 (CI guardrail):** GitHub Actions workflow ถูกสร้างที่ `.github/workflows/ci.yml` พร้อม exit non-zero code เมื่อ lint หรือ test ล้มเหลว
   - [x] **Criterion 5 (Data versioning):** `.gitattributes` และ pre-commit `check-added-large-files` ดักจับไฟล์ข้อมูลขนาดใหญ่ (.h5ad, .loom, .mtx.gz, .csv.gz) ส่งไปยัง Git LFS
   - [x] **Code Coverage:** ผ่าน 33 unit tests 100% พร้อม 87% Code Coverage ทั่วทั้ง `src/workbench_utils/`
+
+---
+
+### 🔹 Part 9: v2.0 Hybrid R/Python Architecture Migration (FR-11, FR-12, FR-13)
+* **สิ่งที่ต้องส่งมอบ:**
+  - `src/workbench_utils/de.py`:
+    - Isolated `rpy2` interop layer (`deseq2_r`, `limma_voom_r`)
+    - Config-driven `run_de` dispatcher with default engine `"deseq2_r"`
+    - Actionable `RDependencyError` with exact Bioconductor installation commands
+    - Pure-Python `deseq2_python` / `run_pydeseq2` preserved as explicit alternative (FR-11)
+    - `prepare_pseudobulk_data` aggregating single-cell counts per biological replicate
+  - `src/workbench_utils/config.py`:
+    - `engine: "deseq2_r"` default configuration with validation
+  - `pyproject.toml`, `environment.yml`, `pixi.toml`:
+    - Version bumped to 0.2.0, `r-stats` optional extra with `rpy2>=3.5.11` and Bioconductor packages
+  - Notebook 03 Upgrade (`notebooks/03_differential_expression.ipynb` / `.py`):
+    - Dual-engine demonstration (R `deseq2_r` default + Python `deseq2_python`), pseudobulk aggregation, and Nature-themed volcano plot
+  - Tests & Verification:
+    - 42 tests passing across `tests/` with 0 failures, testing both Python core, pseudobulk aggregation reproducibility, and mocked/live R interop
+* **คำสั่งตรวจสอบ (Verification Commands):**
+  ```bash
+  pixi run pytest tests/ -v
+  pixi run python -m workbench_utils.config configs/default_analysis.yaml
+  pixi run python -m workbench_utils.config configs/pseudobulk_de_analysis.yaml
+  pixi run papermill notebooks/03_differential_expression.ipynb /tmp/test_03_out.ipynb
+  ```
+* **เกณฑ์ผ่าน (Pass Criteria):**
+  - [x] 42/42 tests ผ่าน 100%
+  - [x] ไม่มี raw rpy2 tracebacks หลุดไปถึงผู้ใช้ มีเพียง `RDependencyError` พร้อมวิธีแก้
+  - [x] ไม่มี silent fallback จาก R DESeq2 ไปยัง PyDESeq2
+  - [x] Notebook 03 รันได้ผลลัพธ์สมบูรณ์ และ output ถูก strip ด้วย `nbstripout`
 
 ---
 
